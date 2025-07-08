@@ -1,0 +1,15 @@
+{
+  "welcome": "👋 Assalomu alaykum! Kodni kiriting va kerakli videoni oling!",
+  "start": "🏠 Bosh sahifa",
+  "language": "🌐 Til",
+  "help": "ℹ️ Yordam",
+  "admin": "👤 Admin",
+  "code": "🎬 Kod",
+  "choose_language": "Tilni tanlang:",
+  "help_text": "🤖 Botdan foydalanish:\n\n1️⃣ Kodni kiriting (masalan: 123)\n2️⃣ Agar mavjud bo‘lsa, sizga video yuboriladi\n3️⃣ Kod topilmasa, 'Video topilmadi' degan xabar chiqadi\n\nAgar qo‘shimcha yordam kerak bo‘lsa, pastdagi 'Admin bilan bog‘lanish' tugmasini bosing.",
+  "admin_contact": "Aloqa uchun admin:",
+  "enter_code": "Kod kiriting:",
+  "video_not_found": "😕 Afsuski, bu kod bo‘yicha video topilmadi.",
+  "subscribe_first": "⛔ Avval quyidagi kanallarga obuna bo‘ling:",
+  "subscribe_button": "✅ Obuna bo‘lish"
+}
