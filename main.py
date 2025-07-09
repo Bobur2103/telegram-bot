@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+# Load environment
 load_dotenv()
 
 app = Flask('')
@@ -79,8 +80,7 @@ def main_keyboard(lang):
         InlineKeyboardButton(l['admin'], callback_data='admin')
     )
     kb.row(
-        InlineKeyboardButton("📢 " + l['feedback'], callback_data='feedback'),
-        InlineKeyboardButton("📊 " + l['stats'], callback_data='stats')
+        InlineKeyboardButton("📢 " + l['feedback'], callback_data='feedback')
     )
     kb.add(InlineKeyboardButton(l['code'], callback_data='code'))
     return kb
@@ -155,15 +155,6 @@ def callback_handler(call):
         bot.send_message(call.message.chat.id, l['send_feedback'])
         FEEDBACK_STATE[call.from_user.id] = True
 
-    elif call.data == 'stats':
-        with open(USERS_FILE, "r") as f:
-            user_count = len(json.load(f))
-        with open(STATS_FILE, "r") as f:
-            stats = json.load(f)
-        total_requests = sum(stats.values())
-        text = f"👤 {l['users']}: {user_count}\n🎞 {l['total_requests']}: {total_requests}"
-        bot.send_message(call.message.chat.id, text)
-
 @bot.message_handler(commands=['stats'])
 def handle_admin_stats(message):
     if message.from_user.id == ADMIN_ID:
@@ -172,8 +163,7 @@ def handle_admin_stats(message):
         with open(STATS_FILE, "r") as f:
             stats = json.load(f)
         total_requests = sum(stats.values())
-        text = f"👥 Users: {user_count}\n🎞 Total requests: {total_requests}"
-        bot.send_message(message.chat.id, text)
+        bot.send_message(message.chat.id, f"👥 Users: {user_count}\n🎞 Total requests: {total_requests}")
 
 @bot.message_handler(commands=['broadcast'])
 def handle_broadcast(message):
@@ -197,7 +187,7 @@ def handle_all_messages(message):
     l = load_language(lang)
 
     if FEEDBACK_STATE.get(user_id):
-        bot.send_message(ADMIN_ID, f"✉️ Yangi fikr/shikoyat:\n\n👤 {user_id}\n📨 {message.text}")
+        bot.send_message(ADMIN_ID, f"✉️ Yangi fikr/shikoyat:\n\n👤 ID: {user_id}\n📨 {message.text}")
         bot.send_message(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.")
         FEEDBACK_STATE[user_id] = False
         return
@@ -228,6 +218,6 @@ def handle_all_messages(message):
     else:
         bot.send_message(message.chat.id, l['video_not_found'])
 
-# --- RUN ---
+# --- RUN BOT ---
 keep_alive()
 bot.polling()
