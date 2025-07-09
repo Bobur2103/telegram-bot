@@ -11,9 +11,10 @@
   "enter_code": "Please send video Code:",
   "subscribe_first": "❗ Subscribe to the following channels to use the bot:",
   "video_not_found": "😔 Video not found. Try again by checking the code.",
-  "feedback": "📝 Comment",
+  "send_feedback": "✍️ Please write your feedback or complaint:",
+  "feedback_received": "✅ Thank you for your feedback!",
+  "feedback": "✉️ Send Feedback",
   "stats": "📊 Statistics",
-  "feedback_prompt": "Please write down your opinion or complaint:",
-  "feedback_sent": "✅ Your opinion was sent to admin!"
-
+  "users": "👤 Users",
+  "total_requests": "📽️ Total video requests"
 }
