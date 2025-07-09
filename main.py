@@ -30,7 +30,7 @@ bot = telebot.TeleBot(TOKEN)
 LANG_PATH = 'langs'
 USERS_FILE = 'users.json'
 
-jokes = ["haa krisa 😂", "qzu bosa oxirigacha ko'r 😆", "voy dodaa 😅", "hech narsani o'tkazib yuborma 🤣"]
+jokes = ["haa krisa 😂", "qzu bosa oxirigacha ko'r 😆", "voy dodaa degin 😅", "hech narsani o'tkazib yuborma 🤣"]
 
 def load_language(lang_code):
     with open(f"{LANG_PATH}/{lang_code}.json", "r", encoding="utf-8") as f:
@@ -120,7 +120,7 @@ def callback_handler(call):
         bot.send_message(call.message.chat.id, l['help_text'])
     elif call.data == 'admin':
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("✉️ Admin bilan bogʻlanish", url="https://t.me/user6597938319"))
+        markup.add(InlineKeyboardButton("✉️ Admin bilan bogʻlanish", url="https://t.me/pep_xi"))
         bot.send_message(call.message.chat.id, l['admin_contact'], reply_markup=markup)
     elif call.data == 'code':
         bot.send_message(call.message.chat.id, l['enter_code'])
