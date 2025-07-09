@@ -12,4 +12,9 @@
   "video_not_found": "😕 Afsuski, bu kod bo‘yicha video topilmadi.",
   "subscribe_first": "⛔ Avval quyidagi kanallarga obuna bo‘ling:",
   "subscribe_button": "✅ Obuna bo‘lish"
+  "feedback": "📝 Fikr bildirish",
+  "stats": "📊 Statistika",
+  "feedback_prompt": "Iltimos, fikr yoki shikoyatingizni yozing:",
+  "feedback_sent": "✅ Fikringiz adminga yuborildi!"
+
 }
