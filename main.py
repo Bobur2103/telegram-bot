@@ -1,6 +1,7 @@
 import os
 import json
 import random
+import requests
 from flask import Flask
 from threading import Thread
 from dotenv import load_dotenv
@@ -67,6 +68,16 @@ def update_video_stats(code):
     stats[code] = stats.get(code, 0) + 1
     with open(STATS_FILE, "w") as f:
         json.dump(stats, f)
+
+def get_direct_gofile_link(gofile_url):
+    file_id = gofile_url.strip().split("/")[-1]
+    try:
+        response = requests.get(f"https://api.gofile.io/getContent?contentId={file_id}&token=&websiteToken=websiteToken&cache=true")
+        data = response.json()
+        file_data = list(data["data"]["contents"].values())[0]
+        return file_data["link"]
+    except:
+        return None
 
 def main_keyboard(lang):
     l = load_language(lang)
@@ -208,11 +219,15 @@ def handle_all_messages(message):
         with open(CODES_FILE, "r") as f:
             codes = json.load(f)
         if code in codes:
-            url = codes[code]
-            bot.send_chat_action(message.chat.id, "upload_video")
-            bot.send_video(message.chat.id, url)
-            update_video_stats(code)
-            bot.send_message(message.chat.id, random.choice(jokes))
+            gofile_url = codes[code]
+            direct_link = get_direct_gofile_link(gofile_url)
+            if direct_link:
+                bot.send_chat_action(message.chat.id, "upload_video")
+                bot.send_video(message.chat.id, direct_link)
+                update_video_stats(code)
+                bot.send_message(message.chat.id, random.choice(jokes))
+            else:
+                bot.send_message(message.chat.id, l['video_not_found'])
         else:
             bot.send_message(message.chat.id, l['video_not_found'])
     else:
