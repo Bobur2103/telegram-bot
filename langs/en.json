@@ -1,0 +1,14 @@
+{
+  "start": "🚀 Start",
+  "language": "🌐 Language",
+  "help": "ℹ️ Help",
+  "admin": "👨‍💻 Admin",
+  "code": "🎥 Code",
+  "welcome": "Hello! Welcome to our bot!",
+  "choose_language": "Choose language:",
+  "help_text": "Send code and get video. If you don't subscribe, the bot won't work.",
+  "admin_contact": "Click the button below to contact Admin:",
+  "enter_code": "Please send video Code:",
+  "subscribe_first": "❗ Subscribe to the following channels to use the bot:",
+  "video_not_found": "😔 Video not found. Try again by checking the code."
+}
