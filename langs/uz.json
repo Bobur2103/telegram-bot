@@ -12,9 +12,10 @@
   "video_not_found": "😕 Afsuski, bu kod bo‘yicha video topilmadi.",
   "subscribe_first": "⛔ Avval quyidagi kanallarga obuna bo‘ling:",
   "subscribe_button": "✅ Obuna bo‘lish",
-  "feedback": "📝 Fikr bildirish",
+  "send_feedback": "✍️ Fikr yoki shikoyatingizni yozing:",
+  "feedback_received": "✅ Fikringiz uchun rahmat!",
+  "feedback": "✉️ Fikr yuborish",
   "stats": "📊 Statistika",
-  "feedback_prompt": "Iltimos, fikr yoki shikoyatingizni yozing:",
-  "feedback_sent": "✅ Fikringiz adminga yuborildi!"
-
+  "users": "👤 Foydalanuvchilar soni",
+  "total_requests": "📽️ Umumiy video so'rovlari"
 }
