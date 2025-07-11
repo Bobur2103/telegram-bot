@@ -1,17 +1,29 @@
 import os
 import json
-import random
 import requests
 from flask import Flask
 from threading import Thread
 from dotenv import load_dotenv
 import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
-# Load environment
+# --- LOAD ENV ---
 load_dotenv()
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+REQUIRED_CHANNELS = os.getenv("CHANNELS").split(",")
+ADMIN_ID = 6597938319
 
+# --- INIT ---
+bot = telebot.TeleBot(TOKEN)
 app = Flask('')
+LANG_PATH = 'langs'
+USERS_FILE = 'users.json'
+CODES_FILE = 'codes.json'
+STATS_FILE = 'stats.json'
+FEEDBACK_STATE = {}
+LAST_BOT_MESSAGES = {}
+
+# --- FLASK KEEP ALIVE ---
 @app.route('/')
 def home():
     return "I'm alive!"
@@ -23,22 +35,7 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
-# --- CONFIGURATION ---
-TOKEN = os.getenv("TELEGRAM_TOKEN")
-REQUIRED_CHANNELS = os.getenv("CHANNELS").split(",")
-ADMIN_ID = 6597938319
-bot = telebot.TeleBot(TOKEN)
-
-LANG_PATH = 'langs'
-USERS_FILE = 'users.json'
-CODES_FILE = 'codes.json'
-STATS_FILE = 'stats.json'
-FEEDBACK_STATE = {}
-USER_LAST_MESSAGE = {}
-
-jokes = ["haa krisa 😂", "qzu bosa oxirigacha ko'r 😆", "voy dodaa 😅", "hech narsani o'tkazib yuborma 🤣"]
-
-# --- HELPERS ---
+# --- LANGUAGE ---
 def load_language(lang_code):
     with open(f"{LANG_PATH}/{lang_code}.json", "r", encoding="utf-8") as f:
         return json.load(f)
@@ -61,6 +58,7 @@ def set_user_lang(user_id, lang_code):
     with open(USERS_FILE, "w") as f:
         json.dump(users, f)
 
+# --- STATS ---
 def update_video_stats(code):
     stats = {}
     if os.path.exists(STATS_FILE):
@@ -70,33 +68,18 @@ def update_video_stats(code):
     with open(STATS_FILE, "w") as f:
         json.dump(stats, f)
 
+# --- GOFILE ---
 def get_direct_gofile_link(gofile_url):
     file_id = gofile_url.strip().split("/")[-1]
     try:
         response = requests.get(f"https://api.gofile.io/getContent?contentId={file_id}&token=&websiteToken=websiteToken&cache=true")
         data = response.json()
         file_data = list(data["data"]["contents"].values())[0]
-        return file_data.get("link")
+        return file_data["link"]
     except:
         return None
 
-def main_keyboard(lang):
-    l = load_language(lang)
-    kb = InlineKeyboardMarkup()
-    kb.row(
-        InlineKeyboardButton(l['start'], callback_data='start'),
-        InlineKeyboardButton(l['language'], callback_data='language')
-    )
-    kb.row(
-        InlineKeyboardButton(l['help'], callback_data='help'),
-        InlineKeyboardButton(l['admin'], callback_data='admin')
-    )
-    kb.row(
-        InlineKeyboardButton("📢 " + l['feedback'], callback_data='feedback')
-    )
-    kb.add(InlineKeyboardButton(l['code'], callback_data='code'))
-    return kb
-
+# --- SUBSCRIPTION ---
 def check_subscription(user_id):
     for channel in REQUIRED_CHANNELS:
         try:
@@ -109,25 +92,39 @@ def check_subscription(user_id):
 
 def send_subscription_prompt(chat_id, lang):
     l = load_language(lang)
-    markup = InlineKeyboardMarkup()
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
     for ch in REQUIRED_CHANNELS:
         try:
             chat = bot.get_chat(ch.strip())
             if chat.username:
-                markup.add(InlineKeyboardButton(l['subscribe_button'], url=f"https://t.me/{chat.username}"))
+                markup.add(KeyboardButton(f"https://t.me/{chat.username}"))
         except:
             continue
-    send_new_message(chat_id, l['subscribe_first'], markup)
+    send_new(chat_id, l['subscribe_first'], markup)
 
-def send_new_message(chat_id, text, reply_markup=None):
-    old_msg = USER_LAST_MESSAGE.get(chat_id)
+# --- MAIN MENU ---
+def main_menu():
+    menu = ReplyKeyboardMarkup(resize_keyboard=True)
+    menu.add(KeyboardButton("/start \u2022 Bot haqida umumiy ma'lumot"))
+    menu.add(KeyboardButton("/kod \u2022 Kod orqali video izlash"))
+    menu.add(KeyboardButton("/yordam \u2022 Foydalanish bo'yicha yordam"))
+    menu.add(KeyboardButton("/til \u2022 Tilni o'zgartirish"))
+    menu.add(KeyboardButton("/fikr \u2022 Fikr yuborish"))
+    menu.add(KeyboardButton("/shikoyat \u2022 Shikoyat yuborish"))
+    menu.add(KeyboardButton("/maxfiylik \u2022 Maxfiylik siyosati"))
+    menu.add(KeyboardButton("/new \u2022 Oxirgi qo'shilgan videolar"))
+    return menu
+
+# --- BOT SEND WITH DELETE ---
+def send_new(chat_id, text, reply_markup=None):
+    old_msg = LAST_BOT_MESSAGES.get(chat_id)
     if old_msg:
         try:
             bot.delete_message(chat_id, old_msg)
         except:
             pass
     new_msg = bot.send_message(chat_id, text, reply_markup=reply_markup)
-    USER_LAST_MESSAGE[chat_id] = new_msg.message_id
+    LAST_BOT_MESSAGES[chat_id] = new_msg.message_id
 
 # --- HANDLERS ---
 @bot.message_handler(commands=['start'])
@@ -137,55 +134,65 @@ def handle_start(message):
         set_user_lang(user_id, "uz")
     lang = get_user_lang(user_id)
     l = load_language(lang)
-    send_new_message(message.chat.id, l['welcome'], main_keyboard(lang))
+    send_new(message.chat.id, l['welcome'], main_menu())
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_handler(call):
-    user_id = str(call.from_user.id)
-    lang = get_user_lang(user_id)
+@bot.message_handler(commands=['yordam'])
+def handle_help(message):
+    lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
+    send_new(message.chat.id, l['help_text'], main_menu())
 
-    if call.data == 'start':
-        send_new_message(call.message.chat.id, l['welcome'], main_keyboard(lang))
+@bot.message_handler(commands=['til'])
+def handle_language(message):
+    lang_msg = "Tilni tanlang / Choose language"
+    menu = ReplyKeyboardMarkup(resize_keyboard=True)
+    menu.row(KeyboardButton("/lang_uz 🇺🇿"), KeyboardButton("/lang_ru 🇷🇺"), KeyboardButton("/lang_en 🇬🇧"))
+    send_new(message.chat.id, lang_msg, menu)
 
-    elif call.data == 'language':
-        kb = InlineKeyboardMarkup()
-        kb.row(
-            InlineKeyboardButton("🇺🇿 Uzbek", callback_data='lang_uz'),
-            InlineKeyboardButton("🇷🇺 Русский", callback_data='lang_ru'),
-            InlineKeyboardButton("🇬🇧 English", callback_data='lang_en')
-        )
-        send_new_message(call.message.chat.id, l['choose_language'], kb)
+@bot.message_handler(commands=['lang_uz', 'lang_ru', 'lang_en'])
+def change_lang(message):
+    lang_code = message.text.split('_')[1]
+    set_user_lang(message.from_user.id, lang_code)
+    send_new(message.chat.id, "✅ Til o'zgartirildi!", main_menu())
 
-    elif call.data.startswith('lang_'):
-        lang_code = call.data.split('_')[1]
-        set_user_lang(call.from_user.id, lang_code)
-        send_new_message(call.message.chat.id, "✅ Til o'zgartirildi!", main_keyboard(lang_code))
+@bot.message_handler(commands=['shikoyat', 'fikr'])
+def handle_feedback(message):
+    lang = get_user_lang(message.from_user.id)
+    l = load_language(lang)
+    FEEDBACK_STATE[message.from_user.id] = True
+    send_new(message.chat.id, l['send_feedback'], main_menu())
 
-    elif call.data == 'help':
-        send_new_message(call.message.chat.id, l['help_text'], main_keyboard(lang))
+@bot.message_handler(commands=['maxfiylik'])
+def handle_privacy(message):
+    lang = get_user_lang(message.from_user.id)
+    l = load_language(lang)
+    send_new(message.chat.id, l['privacy_policy'], main_menu())
 
-    elif call.data == 'admin':
-        markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("✉️ Admin bilan bogʻlanish", url="https://t.me/pep_xi"))
-        send_new_message(call.message.chat.id, l['admin_contact'], markup)
+@bot.message_handler(commands=['new'])
+def handle_new(message):
+    if os.path.exists(CODES_FILE):
+        with open(CODES_FILE, "r") as f:
+            codes = json.load(f)
+        keys = list(codes.keys())[-5:]
+        msg = '\n'.join(keys)
+        send_new(message.chat.id, "🆕 Oxirgi kodlar:\n" + msg, main_menu())
 
-    elif call.data == 'code':
-        send_new_message(call.message.chat.id, l['enter_code'], main_keyboard(lang))
-
-    elif call.data == 'feedback':
-        send_new_message(call.message.chat.id, l['send_feedback'], main_keyboard(lang))
-        FEEDBACK_STATE[call.from_user.id] = True
+@bot.message_handler(commands=['kod'])
+def handle_code_prompt(message):
+    lang = get_user_lang(message.from_user.id)
+    l = load_language(lang)
+    send_new(message.chat.id, l['enter_code'], main_menu())
 
 @bot.message_handler(func=lambda m: True)
-def handle_all_messages(message):
+def handle_messages(message):
     user_id = message.from_user.id
     lang = get_user_lang(user_id)
     l = load_language(lang)
 
     if FEEDBACK_STATE.get(user_id):
-        bot.send_message(ADMIN_ID, f"✉️ Yangi fikr/shikoyat:\n\n👤 ID: {user_id}\n📨 {message.text}")
-        send_new_message(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.", main_keyboard(lang))
+        msg = f"✉️ Fikr yoki shikoyat:\nID: {user_id}\nUsername: @{message.from_user.username}\nXabar: {message.text}"
+        bot.send_message(ADMIN_ID, msg)
+        bot.send_message(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.")
         FEEDBACK_STATE[user_id] = False
         return
 
@@ -194,34 +201,21 @@ def handle_all_messages(message):
         return
 
     code = message.text.strip()
-    local_path = f"static/videos/{code}.mp4"
-    if os.path.exists(local_path):
-        bot.send_chat_action(message.chat.id, "upload_video")
-        with open(local_path, "rb") as vid:
-            bot.send_video(message.chat.id, vid)
-        update_video_stats(code)
-        send_new_message(message.chat.id, random.choice(jokes), main_keyboard(lang))
-        return
-
     if os.path.exists(CODES_FILE):
         with open(CODES_FILE, "r") as f:
             codes = json.load(f)
         if code in codes:
-            gofile_url = codes[code]
-            direct_link = get_direct_gofile_link(gofile_url)
-            if direct_link:
-                bot.send_chat_action(message.chat.id, "upload_video")
-                bot.send_video(message.chat.id, direct_link)
+            link = get_direct_gofile_link(codes[code])
+            if link:
                 update_video_stats(code)
-                send_new_message(message.chat.id, random.choice(jokes), main_keyboard(lang))
+                send_new(message.chat.id, l['video_link_msg'] + f"\n{link}", main_menu())
             else:
-                msg = f"{l['video_not_found']}\n\n<a href='{gofile_url}'>📥 Videoni ko'rish uchun shu yerga bosing</a>"
-                bot.send_message(message.chat.id, msg, parse_mode="HTML", reply_markup=main_keyboard(lang))
+                send_new(message.chat.id, l['video_not_found'], main_menu())
         else:
-            send_new_message(message.chat.id, l['video_not_found'], main_keyboard(lang))
+            send_new(message.chat.id, l['video_not_found'], main_menu())
     else:
-        send_new_message(message.chat.id, l['video_not_found'], main_keyboard(lang))
+        send_new(message.chat.id, l['video_not_found'], main_menu())
 
-# --- RUN BOT ---
+# --- RUN ---
 keep_alive()
 bot.polling()
