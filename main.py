@@ -5,35 +5,45 @@ from flask import Flask
 from threading import Thread
 from dotenv import load_dotenv
 import telebot
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 
-# --- LOAD ENV ---
+# --- CONFIGURATION ---
 load_dotenv()
-TOKEN = os.getenv("TELEGRAM_TOKEN")
-REQUIRED_CHANNELS = os.getenv("CHANNELS").split(",")
-ADMIN_ID = 6597938319
-
-# --- INIT ---
-bot = telebot.TeleBot(TOKEN)
 app = Flask('')
-LANG_PATH = 'langs'
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+REQUIRED_CHANNELS = os.getenv("CHANNELS", "").split(",")
+ADMIN_ID = 6597938319
 USERS_FILE = 'users.json'
 CODES_FILE = 'codes.json'
 STATS_FILE = 'stats.json'
+LANG_PATH = 'langs'
 FEEDBACK_STATE = {}
 LAST_BOT_MESSAGES = {}
 
-# --- FLASK KEEP ALIVE ---
+bot = telebot.TeleBot(TOKEN, parse_mode='HTML')
+
+# --- KEEP ALIVE ---
 @app.route('/')
 def home():
-    return "I'm alive!"
+    return "Bot is running!"
 
 def run():
     app.run(host='0.0.0.0', port=8080)
 
 def keep_alive():
-    t = Thread(target=run)
-    t.start()
+    Thread(target=run).start()
+
+# --- COMMANDS ---
+bot.set_my_commands([
+    BotCommand("start", "Bot haqida umumiy ma’lumot"),
+    BotCommand("kod", "Kod orqali video izlash"),
+    BotCommand("yordam", "Foydalanish bo’yicha yordam"),
+    BotCommand("til", "Tilni o‘zgartirish"),
+    BotCommand("shikoyat", "Admin bilan bog‘lanish"),
+    BotCommand("maxfiylik", "Maxfiylik siyosati haqida"),
+    BotCommand("fikr", "Fikr yuborish"),
+    BotCommand("new", "Oxirgi qo‘shilgan videolar")
+])
 
 # --- LANGUAGE ---
 def load_language(lang_code):
@@ -49,11 +59,10 @@ def get_user_lang(user_id):
     return users.get(str(user_id), "uz")
 
 def set_user_lang(user_id, lang_code):
+    users = {}
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, "r") as f:
             users = json.load(f)
-    else:
-        users = {}
     users[str(user_id)] = lang_code
     with open(USERS_FILE, "w") as f:
         json.dump(users, f)
@@ -68,13 +77,12 @@ def update_video_stats(code):
     with open(STATS_FILE, "w") as f:
         json.dump(stats, f)
 
-# --- GOFILE ---
+# --- GOFILE LINK ---
 def get_direct_gofile_link(gofile_url):
-    file_id = gofile_url.strip().split("/")[-1]
     try:
-        response = requests.get(f"https://api.gofile.io/getContent?contentId={file_id}&token=&websiteToken=websiteToken&cache=true")
-        data = response.json()
-        file_data = list(data["data"]["contents"].values())[0]
+        file_id = gofile_url.strip().split("/")[-1]
+        res = requests.get(f"https://api.gofile.io/getContent?contentId={file_id}&cache=true")
+        file_data = list(res.json()["data"]["contents"].values())[0]
         return file_data["link"]
     except:
         return None
@@ -92,130 +100,117 @@ def check_subscription(user_id):
 
 def send_subscription_prompt(chat_id, lang):
     l = load_language(lang)
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = InlineKeyboardMarkup()
     for ch in REQUIRED_CHANNELS:
-        try:
-            chat = bot.get_chat(ch.strip())
-            if chat.username:
-                markup.add(KeyboardButton(f"https://t.me/{chat.username}"))
-        except:
-            continue
-    send_new(chat_id, l['subscribe_first'], markup)
+        markup.add(InlineKeyboardButton(f"@{ch}", url=f"https://t.me/{ch}"))
+    send_or_edit(chat_id, l['subscribe_first'], markup)
 
-# --- MAIN MENU ---
-def main_menu():
-    menu = ReplyKeyboardMarkup(resize_keyboard=True)
-    menu.add(KeyboardButton("/start \u2022 Bot haqida umumiy ma'lumot"))
-    menu.add(KeyboardButton("/kod \u2022 Kod orqali video izlash"))
-    menu.add(KeyboardButton("/yordam \u2022 Foydalanish bo'yicha yordam"))
-    menu.add(KeyboardButton("/til \u2022 Tilni o'zgartirish"))
-    menu.add(KeyboardButton("/fikr \u2022 Fikr yuborish"))
-    menu.add(KeyboardButton("/shikoyat \u2022 Shikoyat yuborish"))
-    menu.add(KeyboardButton("/maxfiylik \u2022 Maxfiylik siyosati"))
-    menu.add(KeyboardButton("/new \u2022 Oxirgi qo'shilgan videolar"))
-    return menu
+# --- BOT MESSAGES ---
+def send_or_edit(chat_id, text, reply_markup=None):
+    msg_id = LAST_BOT_MESSAGES.get(chat_id)
+    try:
+        if msg_id:
+            bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text=text, reply_markup=reply_markup)
+        else:
+            msg = bot.send_message(chat_id, text, reply_markup=reply_markup)
+            LAST_BOT_MESSAGES[chat_id] = msg.message_id
+    except:
+        msg = bot.send_message(chat_id, text, reply_markup=reply_markup)
+        LAST_BOT_MESSAGES[chat_id] = msg.message_id
 
-# --- BOT SEND WITH DELETE ---
-def send_new(chat_id, text, reply_markup=None):
-    old_msg = LAST_BOT_MESSAGES.get(chat_id)
-    if old_msg:
-        try:
-            bot.delete_message(chat_id, old_msg)
-        except:
-            pass
-    new_msg = bot.send_message(chat_id, text, reply_markup=reply_markup)
-    LAST_BOT_MESSAGES[chat_id] = new_msg.message_id
-
-# --- HANDLERS ---
+# --- COMMAND HANDLERS ---
 @bot.message_handler(commands=['start'])
-def handle_start(message):
-    user_id = str(message.from_user.id)
-    if not os.path.exists(USERS_FILE) or user_id not in json.load(open(USERS_FILE)):
-        set_user_lang(user_id, "uz")
-    lang = get_user_lang(user_id)
+def start_cmd(message):
+    uid = str(message.from_user.id)
+    if not os.path.exists(USERS_FILE) or uid not in json.load(open(USERS_FILE)):
+        set_user_lang(uid, "uz")
+    lang = get_user_lang(uid)
     l = load_language(lang)
-    send_new(message.chat.id, l['welcome'], main_menu())
+    send_or_edit(message.chat.id, l['welcome'])
 
-@bot.message_handler(commands=['yordam'])
-def handle_help(message):
+@bot.message_handler(commands=['kod'])
+def kod_cmd(message):
     lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
-    send_new(message.chat.id, l['help_text'], main_menu())
+    send_or_edit(message.chat.id, l['enter_code'])
+
+@bot.message_handler(commands=['yordam'])
+def help_cmd(message):
+    lang = get_user_lang(message.from_user.id)
+    l = load_language(lang)
+    send_or_edit(message.chat.id, l['help_text'])
 
 @bot.message_handler(commands=['til'])
-def handle_language(message):
-    lang_msg = "Tilni tanlang / Choose language"
-    menu = ReplyKeyboardMarkup(resize_keyboard=True)
-    menu.row(KeyboardButton("/lang_uz 🇺🇿"), KeyboardButton("/lang_ru 🇷🇺"), KeyboardButton("/lang_en 🇬🇧"))
-    send_new(message.chat.id, lang_msg, menu)
+def til_cmd(message):
+    kb = InlineKeyboardMarkup()
+    kb.row(InlineKeyboardButton("🇺🇿 Uzbek", callback_data='lang_uz'),
+           InlineKeyboardButton("🇷🇺 Русский", callback_data='lang_ru'),
+           InlineKeyboardButton("🇬🇧 English", callback_data='lang_en'))
+    send_or_edit(message.chat.id, "Tilni tanlang / Select language", kb)
 
-@bot.message_handler(commands=['lang_uz', 'lang_ru', 'lang_en'])
-def change_lang(message):
-    lang_code = message.text.split('_')[1]
-    set_user_lang(message.from_user.id, lang_code)
-    send_new(message.chat.id, "✅ Til o'zgartirildi!", main_menu())
+@bot.message_handler(commands=['maxfiylik'])
+def privacy_cmd(message):
+    text = (
+        "<b>🔒 Maxfiylik siyosati</b>\n"
+        "Ushbu Maxfiylik siyosati Telegram botimizdan foydalanganda ma'lumotlaringizni qanday to'plashimiz, ishlatishimiz, oshkor qilishimiz va himoya qilishimizni tushuntiradi. Agar bu siyosatga rozisiz, foydalanishni davom eting.\n\n"
+        "<b>To'plangan ma'lumotlar:</b>\n- Telegram ID\n- Tanlangan til\n\n"
+        "<b>Cookie va Kuzatuv:</b>\n- Cookie ishlatilmaydi.\n\n"
+        "<b>Ijtimoiy tarmoqlardan:</b>\n- Faqat ochiq ma'lumotlardan foydalaniladi.\n\n"
+        "<b>Xavfsizlik:</b>\n- Suhbatlar saqlanmaydi.\n- Jo'natilgan linklar xavfsiz."
+    )
+    send_or_edit(message.chat.id, text)
 
-@bot.message_handler(commands=['shikoyat', 'fikr'])
-def handle_feedback(message):
+@bot.message_handler(commands=['fikr', 'shikoyat'])
+def feedback_cmd(message):
     lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
     FEEDBACK_STATE[message.from_user.id] = True
-    send_new(message.chat.id, l['send_feedback'], main_menu())
-
-@bot.message_handler(commands=['maxfiylik'])
-def handle_privacy(message):
-    lang = get_user_lang(message.from_user.id)
-    l = load_language(lang)
-    send_new(message.chat.id, l['privacy_policy'], main_menu())
+    send_or_edit(message.chat.id, l['send_feedback'])
 
 @bot.message_handler(commands=['new'])
-def handle_new(message):
-    if os.path.exists(CODES_FILE):
-        with open(CODES_FILE, "r") as f:
-            codes = json.load(f)
-        keys = list(codes.keys())[-5:]
-        msg = '\n'.join(keys)
-        send_new(message.chat.id, "🆕 Oxirgi kodlar:\n" + msg, main_menu())
+def new_videos(message):
+    if not os.path.exists(CODES_FILE): return
+    with open(CODES_FILE, "r") as f:
+        codes = list(json.load(f).keys())[-5:]
+    send_or_edit(message.chat.id, "Oxirgi videolar: " + ", ".join(codes))
 
-@bot.message_handler(commands=['kod'])
-def handle_code_prompt(message):
-    lang = get_user_lang(message.from_user.id)
-    l = load_language(lang)
-    send_new(message.chat.id, l['enter_code'], main_menu())
-
+# --- FEEDBACK AND VIDEO CODE HANDLER ---
 @bot.message_handler(func=lambda m: True)
-def handle_messages(message):
-    user_id = message.from_user.id
-    lang = get_user_lang(user_id)
+def all_text_handler(message):
+    uid = message.from_user.id
+    lang = get_user_lang(uid)
     l = load_language(lang)
 
-    if FEEDBACK_STATE.get(user_id):
-        msg = f"✉️ Fikr yoki shikoyat:\nID: {user_id}\nUsername: @{message.from_user.username}\nXabar: {message.text}"
-        bot.send_message(ADMIN_ID, msg)
-        bot.send_message(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.")
-        FEEDBACK_STATE[user_id] = False
+    if FEEDBACK_STATE.get(uid):
+        text = f"✉️ Yangi fikr/shikoyat\nID: {uid}\nUsername: @{message.from_user.username or 'yo'q'}\nMatn: {message.text}"
+        bot.send_message(ADMIN_ID, text)
+        send_or_edit(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.")
+        FEEDBACK_STATE[uid] = False
         return
 
-    if not check_subscription(user_id):
+    if not check_subscription(uid):
         send_subscription_prompt(message.chat.id, lang)
         return
 
     code = message.text.strip()
+    if os.path.exists(f"static/videos/{code}.mp4"):
+        with open(f"static/videos/{code}.mp4", "rb") as vid:
+            bot.send_chat_action(message.chat.id, "upload_video")
+            bot.send_video(message.chat.id, vid)
+        update_video_stats(code)
+        return
+
     if os.path.exists(CODES_FILE):
         with open(CODES_FILE, "r") as f:
             codes = json.load(f)
         if code in codes:
             link = get_direct_gofile_link(codes[code])
             if link:
+                send_or_edit(message.chat.id, f"📽 <a href='{link}'>Videoni shu silkada joylashgan. Bemalol o'tib ko'rishingiz mumkin ☺</a>")
                 update_video_stats(code)
-                send_new(message.chat.id, l['video_link_msg'] + f"\n{link}", main_menu())
-            else:
-                send_new(message.chat.id, l['video_not_found'], main_menu())
-        else:
-            send_new(message.chat.id, l['video_not_found'], main_menu())
-    else:
-        send_new(message.chat.id, l['video_not_found'], main_menu())
+                return
+    send_or_edit(message.chat.id, l['video_not_found'])
 
-# --- RUN ---
+# --- RUN BOT ---
 keep_alive()
 bot.polling()
