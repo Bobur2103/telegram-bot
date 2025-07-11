@@ -185,7 +185,8 @@ def handle_all_messages(message):
 
     if FEEDBACK_STATE.get(user_id):
         username = message.from_user.username or "yo'q"
-        text = f"✉️ Yangi fikr/shikoyat\nID: {user_id}\nUsername: @{username}\nMatn: {message.text}"
+        username = message.from_user.username or "yo'q"
+        text = f"✉️ Yangi fikr/shikoyat\nID: {uid}\nUsername: @{username}\nMatn: {message.text}"
         bot.send_message(ADMIN_ID, text)
         send_or_edit_message(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.")
         FEEDBACK_STATE[user_id] = False
