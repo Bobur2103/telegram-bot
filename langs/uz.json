@@ -8,15 +8,12 @@
   "privacy": "🔒 /maxfiylik",
   "new": "🆕 /new",
 
-  "welcome": "👋 Salom! Bu bot orqali siz kod orqali videolarni izlab topishingiz mumkin.",
-  "choose_language": "Iltimos, tilni tanlang:",
-  "help_text": "🆘 Botdan foydalanish uchun videoga mos kodni yuboring yoki /kod tugmasini bosing.",
-  "admin_contact": "📞 Muammo yoki savollaringiz bo‘lsa, admin bilan bog‘laning:",
-  "enter_code": "🔎 Videoni izlash uchun kodni kiriting:",
-  "send_feedback": "✍️ Fikr yoki shikoyatingizni yuboring:",
-  "video_not_found": "😕 Afsuski, bu kod bo‘yicha video topilmadi.",
-  "subscribe_first": "❗️ Iltimos, quyidagi kanallarga obuna bo‘ling:",
-  "subscribe_button": "➕ Obuna bo‘lish",
-  "video_ready": "📽 Videoni shu silkada joylashgan. Bemalol o'tib ko'rishingiz mumkin ☺",
-  "privacy_text": "🔒 Ushbu Maxfiylik siyosati Telegram botimizdan foydalanganda ma'lumotlaringizni qanday to'plashimiz, ishlatishimiz, oshkor qilishimiz va himoya qilishimizni tushuntiradi.\n\nBizning bot yordamida, Agar bu Maxfiylik siyosati shartlariga rozilik bildirasiz.\n\n📌 To‘planadigan ma’lumotlar:\n- Telegram foydalanuvchi identifikatori\n- Tanlangan til\n\n❌ Cookie-fayllar ishlatilmaydi.\n✅ Biz faqat ommaviy ijtimoiy tarmoqlar ma’lumotlarini yuklaymiz.\n\n🛡 Suhbat tarixi saqlanmaydi. Bot yuborgan linklar xavfsizdir."
+  "welcome": "Assalomu alaykum! 🎉\nBotga xush kelibsiz!",
+  "help_text": "📌 Yordam:\n/start - Bot haqida\n/kod - Kod orqali video izlash\n/new - Oxirgi yuklangan videolar\n/til - Tilni o‘zgartirish\n/fikr yoki /shikoyat - Fikr va shikoyat yuborish\n/maxfiylik - Maxfiylik siyosati",
+  "choose_language": "Iltimos, kerakli tilni tanlang:",
+  "send_feedback": "✉️ Fikringiz yoki shikoyatingizni yozing va yuboring:",
+  "privacy": "🔒 Maxfiylik siyosati\n\nUshbu Maxfiylik siyosati Telegram botimizdan foydalanganda maʼlumotlaringizni qanday toʻplashimiz, foydalanishimiz, oshkor qilishimiz va himoya qilishimizni tushuntiradi. Bizning botimizdan foydalanish orqali siz ushbu siyosatga rozilik bildirasiz.\n\n📌 Biz to'playdigan ma'lumotlar:\n- Telegram foydalanuvchi identifikatori\n- Tanlangan til\n\n🔐 Biz cookie fayllari yoki boshqa kuzatuv texnologiyalaridan foydalanmaymiz.\n\n🎥 Yuklangan media: Tashqi xizmatlar orqali olinadi va havolalar xavfsizdir.\n\n🧾 Biz suhbat tarixini saqlamaymiz.\n\n👤 Bot faqat 18+ foydalanuvchilarga mo‘ljallangan.",
+  "subscribe_first": "⛔ Video olishdan oldin quyidagi kanallarga obuna bo‘ling:",
+  "enter_code": "Iltimos, video kodi (masalan: A123) ni yuboring.",
+  "video_not_found": "❌ Afsuski, siz kiritgan kod bo‘yicha video topilmadi."
 }
