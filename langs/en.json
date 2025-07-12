@@ -8,12 +8,13 @@
   "privacy": "🔒 /privacy",
   "new": "🆕 /new",
   
-  "welcome": "Welcome! 🎉\nYou're using our Telegram bot.",
-  "help_text": "📌 Help:\n/start - About the bot\n/kod - Search for a video by code\n/new - Latest uploaded videos\n/til - Change language\n/fikr or /shikoyat - Send feedback or complaint\n/maxfiylik - Privacy Policy",
-  "choose_language": "Please select your language:",
-  "send_feedback": "✉️ Please write your feedback or complaint and send it:",
-  "privacy": "🔒 Privacy Policy\n\nThis policy explains how we collect, use, and protect your data when using our bot.\n\n📌 We collect:\n- Your Telegram User ID\n- The selected language\n\n🔐 We do not use cookies or tracking technologies.\n\n🎥 Videos are accessed via external, safe links.\n\n🧾 We do not store any chat history.\n\n👤 This bot is intended for users aged 18 and older only.",
-  "subscribe_first": "⛔ Please subscribe to the following channels to access the video:",
-  "enter_code": "Please enter the video code (e.g., A123):",
-  "video_not_found": "❌ Sorry, no video found for the code you entered."
+  "welcome": "👋 Hello! Welcome to our bot.\n\nUse the commands below to get started.",
+  "help_text": "🆘 How to use the bot:\n\n🎬 /kod - Enter a code to find a video\n🌐 /til - Change the language\n📣 /shikoyat - Send a complaint\n🔐 /maxfiylik - View the privacy policy",
+  "choose_language": "Please select your preferred language:",
+  "send_feedback": "✉️ Please type your feedback or complaint and send it to me.",
+  "feedback_thanks": "✅ Thank you! Your message has been sent.",
+  "privacy": "🔐 Privacy Policy\nIntroduction\nThis Privacy Policy explains how we collect, use, disclose, and protect your information when you use our Telegram bot. By using our bot, you agree to the terms of this Privacy Policy.\nInformation We Collect\n- Telegram User ID: We collect your Telegram user ID to identify you.\n- General Telegram Info: We may use general information (like your chosen language) provided by Telegram to generate bot statistics.\nCookies and Tracking\nWe do not use cookies or tracking technologies.\nData Storage and Security\n- No Chat History: We do not store chat history. If you delete a message, we cannot recover it.\n- Media Links: Media you upload may contain links to external websites. Please review their privacy policies before visiting.\n- Advertising: Occasionally, you may see ads in the bot. Clicking on them may redirect you to external sites. Review their privacy policies as needed.\n- Security: We take all measures to protect your data using modern cryptographic techniques and best practices.\nContact Us\nIf you have questions about this privacy policy, please contact us via @pep_xi.",
+  "subscribe_first": "📢 Please subscribe to the following channels before using the bot:",
+  "enter_code": "🔢 Please enter the video code:",
+  "video_not_found": "❌ Sorry, no video found for the given code."
 }
