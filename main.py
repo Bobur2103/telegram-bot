@@ -69,13 +69,19 @@ def update_video_stats(code):
         json.dump(stats, f)
 
 def get_direct_gofile_link(gofile_url):
-    file_id = gofile_url.strip().split("/")[-1]
     try:
+        file_id = gofile_url.strip().split("/")[-1]
         response = requests.get(f"https://api.gofile.io/getContent?contentId={file_id}&cache=true")
         data = response.json()
-        file_data = list(data["data"]["contents"].values())[0]
-        return file_data["link"]
-    except:
+        if data.get("status") != "ok":
+            return None
+        contents = data["data"].get("contents", {})
+        if not contents:
+            return None
+        first_file = list(contents.values())[0]
+        return first_file.get("link")
+    except Exception as e:
+        print("GOFILE ERROR:", e)
         return None
 
 def check_subscription(user_id):
@@ -90,7 +96,7 @@ def check_subscription(user_id):
 
 def send_subscription_prompt(chat_id, lang):
     l = load_language(lang)
-    text = l['subscribe_first'] + "\n\n" + "\n".join([f"➡️ @{bot.get_chat(ch.strip()).username}" for ch in REQUIRED_CHANNELS])
+    text = l['subscribe_first'] + "\n\n" + "\n".join([f"\u27a1\ufe0f @{bot.get_chat(ch.strip()).username}" for ch in REQUIRED_CHANNELS])
     bot.send_message(chat_id, text)
 
 def send_or_edit_message(user_id, text, **kwargs):
@@ -133,8 +139,7 @@ def handle_help(message):
 
 @bot.message_handler(commands=['til'])
 def handle_lang(message):
-    user_id = message.from_user.id
-    lang = get_user_lang(user_id)
+    lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
     msg = "\n".join([
         "/til uz - O'zbekcha",
@@ -143,12 +148,13 @@ def handle_lang(message):
     ])
     send_or_edit_message(message.chat.id, l['choose_language'] + "\n" + msg)
 
-@bot.message_handler(commands=['til', 'til uz', 'til ru', 'til en'])
+@bot.message_handler(func=lambda m: m.text and m.text.startswith('/til '))
 def set_lang(message):
     code = message.text.split()[-1]
-    set_user_lang(message.from_user.id, code)
-    l = load_language(code)
-    send_or_edit_message(message.chat.id, "✅ Til o'zgartirildi!" + "\n" + l['welcome'])
+    if code in ['uz', 'ru', 'en']:
+        set_user_lang(message.from_user.id, code)
+        l = load_language(code)
+        send_or_edit_message(message.chat.id, "✅ Til o‘zgartirildi!\n" + l['welcome'])
 
 @bot.message_handler(commands=['shikoyat', 'fikr'])
 def start_feedback(message):
@@ -184,7 +190,7 @@ def handle_all_messages(message):
 
     if FEEDBACK_STATE.get(user_id):
         username = message.from_user.username or "yo'q"
-        text = f"\u2709\ufe0f Yangi fikr/shikoyat\nID: {user_id}\nUsername: @{username}\nMatn: {message.text}"
+        text = f"✉️ Yangi fikr/shikoyat\nID: {user_id}\nUsername: @{username}\nMatn: {message.text}"
         bot.send_message(ADMIN_ID, text)
         send_or_edit_message(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.")
         FEEDBACK_STATE[user_id] = False
