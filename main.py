@@ -5,9 +5,9 @@ from flask import Flask
 from threading import Thread
 from dotenv import load_dotenv
 import telebot
-from telebot.types import BotCommand
+from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
 
-# Load environment variables
+# Load .env
 load_dotenv()
 
 app = Flask(__name__)
@@ -20,12 +20,11 @@ def run():
     app.run(host='0.0.0.0', port=8080)
 
 def keep_alive():
-    t = Thread(target=run)
-    t.start()
+    Thread(target=run).start()
 
 # --- CONFIGURATION ---
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-REQUIRED_CHANNELS = os.getenv("CHANNELS", "").split(",")
+REQUIRED_CHANNELS = os.getenv("CHANNELS", "").split(",")  # channel IDs like -1001234567890
 ADMIN_ID = 6597938319
 bot = telebot.TeleBot(TOKEN)
 
@@ -36,9 +35,10 @@ STATS_FILE = 'stats.json'
 FEEDBACK_STATE = {}
 LAST_MESSAGES = {}
 
-# --- HELPER FUNCTIONS ---
-def load_language(lang_code):
-    with open(f"{LANG_PATH}/{lang_code}.json", "r", encoding="utf-8") as f:
+# --- FUNCTIONS ---
+def load_language(code):
+    path = f"{LANG_PATH}/{code}.json"
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 def get_user_lang(user_id):
@@ -69,25 +69,12 @@ def update_video_stats(code):
         json.dump(stats, f)
 
 def get_direct_gofile_link(gofile_url):
-    try:
-        file_id = gofile_url.strip().split("/")[-1]
-        response = requests.get(f"https://api.gofile.io/getContent?contentId={file_id}&cache=true")
-        data = response.json()
-        if data.get("status") != "ok":
-            return None
-        contents = data["data"].get("contents", {})
-        if not contents:
-            return None
-        first_file = list(contents.values())[0]
-        return first_file.get("link")
-    except Exception as e:
-        print("GOFILE ERROR:", e)
-        return None
+    return gofile_url.strip()
 
 def check_subscription(user_id):
-    for channel in REQUIRED_CHANNELS:
+    for ch_id in REQUIRED_CHANNELS:
         try:
-            member = bot.get_chat_member(channel.strip(), user_id)
+            member = bot.get_chat_member(ch_id, user_id)
             if member.status in ['left', 'kicked']:
                 return False
         except:
@@ -96,8 +83,18 @@ def check_subscription(user_id):
 
 def send_subscription_prompt(chat_id, lang):
     l = load_language(lang)
-    text = l['subscribe_first'] + "\n\n" + "\n".join([f"\u27a1\ufe0f @{bot.get_chat(ch.strip()).username}" for ch in REQUIRED_CHANNELS])
-    bot.send_message(chat_id, text)
+    markup = InlineKeyboardMarkup()
+    for ch_id in REQUIRED_CHANNELS:
+        try:
+            chat = bot.get_chat(ch_id)
+            title = chat.title
+            invite_link = f"https://t.me/{chat.username}" if chat.username else chat.invite_link
+            if not invite_link:
+                invite_link = f"https://t.me/c/{str(ch_id)[4:]}"
+            markup.add(InlineKeyboardButton(text=title, url=invite_link))
+        except:
+            continue
+    bot.send_message(chat_id, l['subscribe_first'], reply_markup=markup)
 
 def send_or_edit_message(user_id, text, **kwargs):
     if LAST_MESSAGES.get(user_id):
@@ -109,23 +106,21 @@ def send_or_edit_message(user_id, text, **kwargs):
     LAST_MESSAGES[user_id] = msg.message_id
 
 # --- BOT COMMANDS ---
-COMMANDS = [
+bot.set_my_commands([
     BotCommand("start", "Bot haqida umumiy ma’lumot"),
     BotCommand("kod", "Kod orqali video izlash"),
     BotCommand("yordam", "Foydalanish bo’yicha yordam"),
     BotCommand("til", "Tilni o‘zgartirish"),
     BotCommand("shikoyat", "Shikoyat yuborish"),
     BotCommand("maxfiylik", "Maxfiylik siyosati haqida"),
-    BotCommand("fikr", "Fikr bildirish"),
-    BotCommand("new", "Oxirgi yuklangan videolar")
-]
-bot.set_my_commands(COMMANDS)
+    BotCommand("fikr", "Fikr bildirish")
+])
 
-# --- MESSAGE HANDLERS ---
+# --- HANDLERS ---
 @bot.message_handler(commands=['start'])
 def handle_start(message):
-    user_id = str(message.from_user.id)
-    if not os.path.exists(USERS_FILE) or user_id not in json.load(open(USERS_FILE)):
+    user_id = message.from_user.id
+    if not os.path.exists(USERS_FILE) or str(user_id) not in json.load(open(USERS_FILE)):
         set_user_lang(user_id, "uz")
     lang = get_user_lang(user_id)
     l = load_language(lang)
@@ -141,23 +136,22 @@ def handle_help(message):
 def handle_lang(message):
     lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
-    msg = "\n".join([
+    msg = l['choose_language'] + "\n\n" + "\n".join([
         "/til uz - O'zbekcha",
         "/til ru - Русский",
         "/til en - English"
     ])
-    send_or_edit_message(message.chat.id, l['choose_language'] + "\n" + msg)
+    send_or_edit_message(message.chat.id, msg)
 
-@bot.message_handler(func=lambda m: m.text and m.text.startswith('/til '))
+@bot.message_handler(commands=['til', 'til uz', 'til ru', 'til en'])
 def set_lang(message):
     code = message.text.split()[-1]
-    if code in ['uz', 'ru', 'en']:
-        set_user_lang(message.from_user.id, code)
-        l = load_language(code)
-        send_or_edit_message(message.chat.id, "✅ Til o‘zgartirildi!\n" + l['welcome'])
+    set_user_lang(message.from_user.id, code)
+    l = load_language(code)
+    send_or_edit_message(message.chat.id, "✅ Til o'zgartirildi!\n" + l['welcome'])
 
 @bot.message_handler(commands=['shikoyat', 'fikr'])
-def start_feedback(message):
+def handle_feedback(message):
     FEEDBACK_STATE[message.from_user.id] = True
     lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
@@ -168,13 +162,6 @@ def handle_privacy(message):
     lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
     send_or_edit_message(message.chat.id, l['privacy'])
-
-@bot.message_handler(commands=['new'])
-def handle_new(message):
-    if os.path.exists(CODES_FILE):
-        with open(CODES_FILE) as f:
-            codes = list(json.load(f).keys())[-5:]
-            send_or_edit_message(message.chat.id, "Oxirgi videolar: \n" + "\n".join(codes))
 
 @bot.message_handler(commands=['kod'])
 def request_code(message):
@@ -192,7 +179,7 @@ def handle_all_messages(message):
         username = message.from_user.username or "yo'q"
         text = f"✉️ Yangi fikr/shikoyat\nID: {user_id}\nUsername: @{username}\nMatn: {message.text}"
         bot.send_message(ADMIN_ID, text)
-        send_or_edit_message(message.chat.id, "✅ Rahmat! Xabaringiz yuborildi.")
+        send_or_edit_message(message.chat.id, l['feedback_thanks'])
         FEEDBACK_STATE[user_id] = False
         return
 
@@ -206,7 +193,9 @@ def handle_all_messages(message):
         with open(local_path, "rb") as vid:
             bot.send_video(message.chat.id, vid)
         update_video_stats(code)
-    elif os.path.exists(CODES_FILE):
+        return
+
+    if os.path.exists(CODES_FILE):
         with open(CODES_FILE) as f:
             codes = json.load(f)
         if code in codes:
@@ -215,12 +204,9 @@ def handle_all_messages(message):
             if direct_link:
                 bot.send_message(message.chat.id, f"Videoni shu silkada joylashgan. Bemalol o'tib ko'rishingiz mumkin ☺\n{direct_link}")
                 update_video_stats(code)
-            else:
-                send_or_edit_message(message.chat.id, l['video_not_found'])
-        else:
-            send_or_edit_message(message.chat.id, l['video_not_found'])
-    else:
-        send_or_edit_message(message.chat.id, l['video_not_found'])
+                return
+
+    send_or_edit_message(message.chat.id, l['video_not_found'])
 
 # --- START ---
 keep_alive()
