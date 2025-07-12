@@ -5,8 +5,6 @@
   "admin": "📞 /complain",
   "feedback": "💬 /feedback",
   "code": "🎬 /code",
-  "privacy": "🔒 /privacy",
-  "new": "🆕 /new",
   
   "welcome": "👋 Hello! Welcome to our bot.\n\nUse the commands below to get started.",
   "help_text": "🆘 How to use the bot:\n\n🎬 /kod - Enter a code to find a video\n🌐 /til - Change the language\n📣 /shikoyat - Send a complaint\n🔐 /maxfiylik - View the privacy policy",
