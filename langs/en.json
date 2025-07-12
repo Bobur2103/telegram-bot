@@ -7,16 +7,13 @@
   "code": "🎬 /code",
   "privacy": "🔒 /privacy",
   "new": "🆕 /new",
-
-  "welcome": "👋 Hello! You can search videos using a code.",
-  "choose_language": "Please choose a language:",
-  "help_text": "🆘 To use the bot, send a valid video code or click /code.",
-  "admin_contact": "📞 For any issue or question, contact admin:",
-  "enter_code": "🔎 Enter the code to find the video:",
-  "send_feedback": "✍️ Send us your feedback or complaint:",
-  "video_not_found": "😕 Sorry, no video found for this code.",
-  "subscribe_first": "❗️ Please subscribe to the following channels:",
-  "subscribe_button": "➕ Subscribe",
-  "video_ready": "📽 The video is available at this link. Feel free to watch ☺",
-  "privacy_text": "🔒 This Privacy Policy explains how we collect, use, and protect your data while using this Telegram bot.\n\nBy using this bot, you agree to the policy.\n\n📌 Data we collect:\n- Telegram user ID\n- Selected language\n\n❌ No cookies are used.\n✅ Only public media data is fetched.\n\n🛡 Chat history is not stored. Links sent by the bot are completely safe."
+  
+  "welcome": "Welcome! 🎉\nYou're using our Telegram bot.",
+  "help_text": "📌 Help:\n/start - About the bot\n/kod - Search for a video by code\n/new - Latest uploaded videos\n/til - Change language\n/fikr or /shikoyat - Send feedback or complaint\n/maxfiylik - Privacy Policy",
+  "choose_language": "Please select your language:",
+  "send_feedback": "✉️ Please write your feedback or complaint and send it:",
+  "privacy": "🔒 Privacy Policy\n\nThis policy explains how we collect, use, and protect your data when using our bot.\n\n📌 We collect:\n- Your Telegram User ID\n- The selected language\n\n🔐 We do not use cookies or tracking technologies.\n\n🎥 Videos are accessed via external, safe links.\n\n🧾 We do not store any chat history.\n\n👤 This bot is intended for users aged 18 and older only.",
+  "subscribe_first": "⛔ Please subscribe to the following channels to access the video:",
+  "enter_code": "Please enter the video code (e.g., A123):",
+  "video_not_found": "❌ Sorry, no video found for the code you entered."
 }
