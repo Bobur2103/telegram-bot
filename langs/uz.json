@@ -6,14 +6,13 @@
   "feedback": "💬 /fikr",
   "code": "🎬 /kod",
   "privacy": "🔒 /maxfiylik",
-  "new": "🆕 /new",
 
   "welcome": "Assalomu alaykum! 🎉\nBotga xush kelibsiz!",
-  "help_text": "📌 Yordam:\n/start - Bot haqida\n/kod - Kod orqali video izlash\n/new - Oxirgi yuklangan videolar\n/til - Tilni o‘zgartirish\n/fikr yoki /shikoyat - Fikr va shikoyat yuborish\n/maxfiylik - Maxfiylik siyosati",
+  "help_text": "📌 Yordam:\n/start - Bot haqida\n/kod - Kod orqali video izlash 🎬\n/til - Tilni o‘zgartirish\n/Fikr yoki /Shikoyat - Fikr va shikoyat yuborish\n/maxfiylik - Maxfiylik siyosati",
   "choose_language": "Iltimos, kerakli tilni tanlang:",
   "send_feedback": "✉️ Fikringiz yoki shikoyatingizni yozing va yuboring:",
-  "privacy": "🔒 Maxfiylik siyosati\n\nUshbu Maxfiylik siyosati Telegram botimizdan foydalanganda maʼlumotlaringizni qanday toʻplashimiz, foydalanishimiz, oshkor qilishimiz va himoya qilishimizni tushuntiradi. Bizning botimizdan foydalanish orqali siz ushbu siyosatga rozilik bildirasiz.\n\n📌 Biz to'playdigan ma'lumotlar:\n- Telegram foydalanuvchi identifikatori\n- Tanlangan til\n\n🔐 Biz cookie fayllari yoki boshqa kuzatuv texnologiyalaridan foydalanmaymiz.\n\n🎥 Yuklangan media: Tashqi xizmatlar orqali olinadi va havolalar xavfsizdir.\n\n🧾 Biz suhbat tarixini saqlamaymiz.\n\n👤 Bot faqat 18+ foydalanuvchilarga mo‘ljallangan.",
+  "privacy": "🔒 Maxfiylik siyosati\n\nUshbu Maxfiylik siyosati Telegram botimizdan foydalanganda maʼlumotlaringizni qanday toʻplashimiz, foydalanishimiz, oshkor qilishimiz va himoya qilishimizni tushuntiradi. Bizning botimizdan foydalanish orqali siz ushbu siyosatga rozilik bildirasiz.\n\n📌 Biz to'playdigan ma'lumotlar:\n- Telegram foydalanuvchi identifikatori\n- Tanlangan til\n\n🔐 Biz cookie fayllari yoki boshqa kuzatuv texnologiyalaridan foydalanmaymiz.\n\n🎥 Yuklangan media: Tashqi xizmatlar orqali olinadi va havolalar xavfsizdir.\n\n🧾 Biz suhbat tarixini saqlamaymiz.\n\n👤 Botdan xohlagan telegram foydalanuvchisi foydalansa bo'ladi.",
   "subscribe_first": "⛔ Video olishdan oldin quyidagi kanallarga obuna bo‘ling:",
-  "enter_code": "Iltimos, video kodi (masalan: A123) ni yuboring.",
+  "enter_code": "Iltimos, video kodi (masalan: 111) ni yuboring.",
   "video_not_found": "❌ Afsuski, siz kiritgan kod bo‘yicha video topilmadi."
 }
