@@ -136,17 +136,6 @@ def handle_help(message):
 def handle_lang(message):
     lang = get_user_lang(message.from_user.id)
     l = load_language(lang)
-    msg = l['choose_language'] + "\n\n" + "\n".join([
-        "/til uz - O'zbekcha",
-        "/til ru - Русский",
-        "/til en - English"
-    ])
-    send_or_edit_message(message.chat.id, msg)
-
-@bot.message_handler(commands=['til'])
-def handle_lang(message):
-    lang = get_user_lang(message.from_user.id)
-    l = load_language(lang)
 
     markup = InlineKeyboardMarkup()
     markup.row(
@@ -169,7 +158,6 @@ def handle_lang_callback(call):
         )
     except:
         bot.send_message(call.message.chat.id, f"✅ Til o'zgartirildi!\n\n{l['welcome']}")
-
 
 @bot.message_handler(commands=['shikoyat', 'fikr'])
 def handle_feedback(message):
