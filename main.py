@@ -143,12 +143,33 @@ def handle_lang(message):
     ])
     send_or_edit_message(message.chat.id, msg)
 
-@bot.message_handler(commands=['til', 'til uz', 'til ru', 'til en'])
-def set_lang(message):
-    code = message.text.split()[-1]
-    set_user_lang(message.from_user.id, code)
+@bot.message_handler(commands=['til'])
+def handle_lang(message):
+    lang = get_user_lang(message.from_user.id)
+    l = load_language(lang)
+
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton("🇺🇿 O'zbekcha", callback_data="lang_uz"),
+        InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
+        InlineKeyboardButton("🇺🇸 English", callback_data="lang_en")
+    )
+    send_or_edit_message(message.chat.id, l['choose_language'], reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("lang_"))
+def handle_lang_callback(call):
+    code = call.data.split("_")[1]
+    set_user_lang(call.from_user.id, code)
     l = load_language(code)
-    send_or_edit_message(message.chat.id, "✅ Til o'zgartirildi!\n" + l['welcome'])
+    try:
+        bot.edit_message_text(
+            f"✅ Til o'zgartirildi!\n\n{l['welcome']}",
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id
+        )
+    except:
+        bot.send_message(call.message.chat.id, f"✅ Til o'zgartirildi!\n\n{l['welcome']}")
+
 
 @bot.message_handler(commands=['shikoyat', 'fikr'])
 def handle_feedback(message):
