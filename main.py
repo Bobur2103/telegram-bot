@@ -200,7 +200,7 @@ def handle_all_messages(message):
             gofile_url = codes[code]
             direct_link = get_direct_gofile_link(gofile_url)
             if direct_link:
-                bot.send_message(message.chat.id, f"Videoni shu silkada joylashgan. Bemalol o'tib ko'rishingiz mumkin ☺\n{direct_link}")
+                bot.send_message(message.chat.id, f"Video shu silkada joylashgan. Bemalol o'tib ko'rishingiz mumkin ☺\n{direct_link}")
                 update_video_stats(code)
                 return
 
