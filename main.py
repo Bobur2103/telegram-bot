@@ -105,17 +105,6 @@ def send_or_edit_message(user_id, text, **kwargs):
     msg = bot.send_message(user_id, text, **kwargs)
     LAST_MESSAGES[user_id] = msg.message_id
 
-# --- BOT COMMANDS ---
-bot.set_my_commands([
-    BotCommand("start", "Bot haqida umumiy ma’lumot"),
-    BotCommand("kod", "Kod orqali video izlash"),
-    BotCommand("yordam", "Foydalanish bo’yicha yordam"),
-    BotCommand("til", "Tilni o‘zgartirish"),
-    BotCommand("shikoyat", "Shikoyat yuborish"),
-    BotCommand("maxfiylik", "Maxfiylik siyosati haqida"),
-    BotCommand("fikr", "Fikr bildirish")
-])
-
 # --- HANDLERS ---
 @bot.message_handler(commands=['start'])
 def handle_start(message):
