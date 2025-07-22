@@ -1,8 +1,7 @@
 import os
 import json
 import requests
-from flask import Flask
-from threading import Thread
+from flask import Flask, request
 from dotenv import load_dotenv
 import telebot
 from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
@@ -10,17 +9,12 @@ from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
 # Load .env
 load_dotenv()
 
+# Flask app
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "I'm alive!"
-
-def run():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    Thread(target=run).start()
+    return "Bot ishlayapti!"
 
 # --- CONFIGURATION ---
 TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -206,6 +200,16 @@ def handle_all_messages(message):
 
     send_or_edit_message(message.chat.id, l['video_not_found'])
 
-# --- START ---
-keep_alive()
-bot.polling()
+# --- Webhook endpoint ---
+@app.route(f'/{TOKEN}', methods=['POST'])
+def receive_update():
+    update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
+    bot.process_new_updates([update])
+    return "OK", 200
+
+# --- Start server and set webhook ---
+if __name__ == "__main__":
+    WEBHOOK_URL = f"https://telegram-bot-e33n.onrender.com/{TOKEN}"
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL)
+    app.run(host="0.0.0.0", port=8080)
